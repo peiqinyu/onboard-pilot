@@ -1,5 +1,4 @@
 # onboard-pilot
-# DOCS
 
 This is an app that help people onboard, and keep everything on track by answering their questions
 according to information from linear(ADO, confluent and Slack in the future) 
