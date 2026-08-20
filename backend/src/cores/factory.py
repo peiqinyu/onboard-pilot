@@ -4,7 +4,6 @@ from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.ollama import OllamaChatCompletion, OllamaChatPromptExecutionSettings
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.functions import KernelPlugin, KernelArguments
-
 from backend.src.cores.agent_orchestrator import AgentOrchestrator
 from backend.src.skills.debug_agent import DebugAgent
 from backend.src.skills.report_agent import ReportAgent
@@ -63,14 +62,12 @@ rag_connector = PgVectorRAGStoreConnector()
 linear_connector = LinearConnector()
 rag_plugin = add_doc_plugin(kernel_instance, rag_connector)
 linear_plugin = add_doc_plugin(kernel_instance, linear_connector)
+chat_client = kernel_instance.get_service(CHAT_NAME)
+settings = OllamaChatPromptExecutionSettings(options={"temperature": 0.2})
 
 
 async def start_chat_session(kernel: Kernel, orchestrator: AgentOrchestrator):
-
-    chat_client = kernel.get_service(CHAT_NAME)
-    settings = OllamaChatPromptExecutionSettings(options={"temperature": 0.2})
-
-    # 2. Maintain a single ChatHistory object for this session
+    # Maintain a single ChatHistory object for this session
     history = ChatHistory()
     logger.info("🤖 AI Session Ready! Type 'exit' to quit.\n")
     current_agent_name = None

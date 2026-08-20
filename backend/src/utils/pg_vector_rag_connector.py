@@ -57,7 +57,7 @@ class PgVectorRAGStoreConnector(BaseConnector):
         Searches the vector database for the closest chunks to the user's query.
         Optionally filters the search to a specific document.
         """
-        logger.info(f"Searching for: '{query}'")
+        logger.info(f"Searching in RAG for: '{query}'")
 
         # If a filter is provided, LangChain will ONLY search chunks that
         # match that specific metadata source

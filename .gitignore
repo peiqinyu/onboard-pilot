@@ -1,2 +1,4 @@
 backend/.env
 .idea/*
+frontend/ui/node_modules/*
+*.pyc

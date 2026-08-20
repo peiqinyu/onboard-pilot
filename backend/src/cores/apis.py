@@ -1,65 +1,94 @@
-from flask import Flask, jsonify, request
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from semantic_kernel.contents import ChatHistory
+from semantic_kernel.functions import KernelArguments
+from fastapi.middleware.cors import CORSMiddleware
+from backend.src.utils.logger_utils import logger
+from backend.src.utils.utils import construct_user_prompt
+from backend.src.cores.factory import kernel_instance, orchestrator_instance, \
+    linear_plugin, rag_plugin, chat_client, settings
 
-app = Flask(__name__)
-
-# Sample data store
-books = [
-    {"id": 1, "title": "The Hobbit", "author": "J.R.R. Tolkien"},
-    {"id": 2, "title": "1849", "author": "George Orwell"}
-]
-
-# GET: Retrieve all books
-@app.route('/books', methods=['GET'])
-def get_books():
-    return jsonify(books), 200
-
-# GET: Retrieve a single book by ID
-@app.route('/books/<int:book_id>', methods=['GET'])
-def get_book(book_id):
-    book = next((b for b in books if b["id"] == book_id), None)
-    if book:
-        return jsonify(book), 200
-    return jsonify({"error": "Book not found"}), 404
-
-
-# POST: Add a new book
-@app.route('/books', methods=['POST'])
-def create_book():
-    if not request.json or 'title' not in request.json:
-        return jsonify({"error": "Bad request, 'title' is required"}), 400
-
-    new_book = {
-        "id": books[-1]["id"] + 1 if books else 1,
-        "title": request.json['title'],
-        "author": request.json.get('author', 'Unknown')
-    }
-    books.append(new_book)
-    return jsonify(new_book), 201
+# Setup FastAPI
+app = FastAPI()
+# Allow your React local dev server to talk to the Python API
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, swap "*" for your explicit frontend domain
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+# Global session store to keep track of chat history per user
+# In production, use Redis or a database
+sessions = {}
 
 
-# PUT: Update an existing book
-@app.route('/books/<int:book_id>', methods=['PUT'])
-def update_book(book_id):
-    book = next((b for b in books if b["id"] == book_id), None)
-    if not book:
-        return jsonify({"error": "Book not found"}), 404
-
-    book['title'] = request.json.get('title', book['title'])
-    book['author'] = request.json.get('author', book['author'])
-    return jsonify(book), 200
+# Pydantic schema for incoming requests
+class ChatRequest(BaseModel):
+    session_id: str
+    user_input: str
 
 
-# DELETE: Remove a book
-@app.route('/books/<int:book_id>', methods=['DELETE'])
-def delete_book(book_id):
-    global books
-    book = next((b for b in books if b["id"] == book_id), None)
-    if not book:
-        return jsonify({"error": "Book not found"}), 404
+@app.post("/api/chat")
+async def chat_endpoint(chat_request: ChatRequest):
+    user_input = chat_request.user_input.strip()
+    session_id = chat_request.session_id
+    if not user_input:
+        raise HTTPException(status_code=400, detail="Input cannot be empty")
 
-    books = [b for b in books if b["id"] != book_id]
-    return jsonify({"result": True}), 200
+        # Route agent dynamically
+    agent = orchestrator_instance.assign_agent(user_input)
+    if agent is None:
+        return {"response": "I can answer technical related questions only, please ask another question!",
+                "agent_assigned": None}
 
+    # Initialize or fetch the specific user session history
+    if session_id not in sessions:
+        sessions[session_id] = {
+            "current_agent_name": None,
+            "history": ChatHistory()
+        }
 
-if __name__ == '__main__':
-    app.run(debug=True)
+    session_data = sessions[session_id]
+    # Handle agent re-assignment and history wipe conditions
+    if session_data["current_agent_name"] is None or agent.name != session_data["current_agent_name"]:
+        session_data["current_agent_name"] = agent.name
+        session_data["history"] = ChatHistory()
+        session_data["history"].add_system_message(agent.system_prompt)
+        logger.debug(f"🤖 (Re)Assign task to agent {agent.name}")
+
+    # Run Research RAG/Linear logic if applicable
+    if session_data["current_agent_name"] == orchestrator_instance.agent_dir["Research"].name:
+        filtered_user_input = orchestrator_instance.filter_words(user_input)
+
+        # Invoke your RAG/Linear semantic kernel plugins
+        rag_result = await kernel_instance.invoke(function=rag_plugin["search_k_content"],
+                                                  arguments=KernelArguments(query=filtered_user_input))
+        linear_result = await kernel_instance.invoke(function=linear_plugin["search_k_content"],
+                                                     arguments=KernelArguments(query=filtered_user_input))
+
+        refined_user_input = construct_user_prompt(str(rag_result), str(linear_result), user_input)
+    else:
+        refined_user_input = user_input
+
+    # Add query to history
+    session_data["history"].add_user_message(refined_user_input)
+
+    try:
+        # Await LLM completion
+        response = await chat_client.get_chat_message_contents(
+            chat_history=session_data["history"],
+            settings=settings
+        )
+
+        ai_text = "".join([chat_msg.inner_content.message.content for chat_msg in response])
+
+        # Keep track of response inside chat history
+        session_data["history"].add_assistant_message(ai_text)
+
+        return {"response": ai_text,
+                "agent_assigned": agent.name}
+
+    except Exception as e:
+        logger.error(f"An error occurred: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
