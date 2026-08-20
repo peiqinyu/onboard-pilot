@@ -5,6 +5,7 @@ according to information from linear(ADO, confluent and Slack in the future)
 
 
 ## Flow Chart
+![Project Screenshot](./flow.png)
 
 ## Examples 
 Questions and good answers:
