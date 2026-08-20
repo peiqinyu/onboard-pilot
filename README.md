@@ -5,7 +5,11 @@ according to information from linear(ADO, confluent and Slack in the future)
 
 
 ## Flow Chart
+The data flow of the project:
 ![Project Screenshot](./docs/flow.png)
+
+Below is how agent interact:
+![Agent Screenshot](./docs/multi-agent.png)
 
 ## Examples 
 Questions and good answers:
