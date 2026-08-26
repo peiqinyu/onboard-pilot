@@ -3,3 +3,4 @@ backend/.env
 frontend/ui/node_modules/*
 *.pyc
 .DS_Store
+backend/tests/reports/*

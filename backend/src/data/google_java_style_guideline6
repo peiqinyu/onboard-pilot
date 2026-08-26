@@ -1,0 +1,27 @@
+6 Programming Practices
+6.1 @Override: always used
+A method is marked with the @Override annotation whenever it is legal. This includes a class method overriding a superclass method, a class method implementing an interface method, an interface method respecifying a superinterface method, and an explicitly declared accessor method for a record component.
+
+Exception: @Override may be omitted when the parent method is @Deprecated.
+
+6.2 Caught exceptions: not ignored
+It is very rarely correct to do nothing in response to a caught exception. (Typical responses are to log it, or if it is considered "impossible", rethrow it as an AssertionError.)
+
+When it truly is appropriate to take no action whatsoever in a catch block, the reason this is justified is explained in a comment.
+
+try {
+  int i = Integer.parseInt(response);
+  return handleNumericResponse(i);
+} catch (NumberFormatException _) {
+  // it's not numeric; that's fine, just continue
+}
+return handleTextResponse(response);
+6.3 Static members: qualified using class
+When a reference to a static class member must be qualified, it is qualified with that class's name, not with a reference or expression of that class's type.
+
+Foo aFoo = ...;
+Foo.aStaticMethod(); // good
+aFoo.aStaticMethod(); // bad
+somethingThatYieldsAFoo().aStaticMethod(); // very bad
+6.4 Finalizers: not used
+Do not override Object.finalize. Finalization support is scheduled for removal.

@@ -1,0 +1,8 @@
+Production best practices
+Transition AI projects to production with best practices.
+
+
+Copy Page
+This guide provides a comprehensive set of best practices to help you transition from prototype to production. Whether you are a seasoned machine learning engineer or a recent enthusiast, this guide should provide you with the tools you need to successfully put the platform to work in a production setting: from securing access to our API to designing a robust architecture that can handle high traffic volumes. Use this guide to help develop a plan for deploying your application as smoothly and effectively as possible.
+
+If you want to explore best practices for going into production further, please check out our Developer Day talk:

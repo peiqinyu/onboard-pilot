@@ -1,0 +1,7 @@
+Security and compliance
+As you move your prototype into production, you will need to assess and address any security and compliance requirements that may apply to your application. This will involve examining the data you are handling, understanding how our API processes data, and determining what regulations you must adhere to. Our security practices and trust and compliance portal provide our most comprehensive and up-to-date documentation. For reference, here is our Privacy Policy and Terms of Use.
+Some common areas you’ll need to consider include data storage, data transmission, and data retention. You might also need to implement data privacy protections, such as encryption or anonymization where possible. In addition, you should follow best practices for secure coding, such as input sanitization and proper error handling.
+Safety best practices
+When creating your application with our API, consider our safety best practices to ensure your application is safe and successful. These recommendations highlight the importance of testing the product extensively, being proactive about addressing potential issues, and limiting opportunities for misuse.
+Business considerations
+As projects using AI move from prototype to production, it is important to consider how to build a great product with AI and how that ties back to your core business. We certainly don’t have all the answers but a great starting place is a talk from our Developer Day where we dive into this with some of our customers:

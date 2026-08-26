@@ -1,7 +1,7 @@
 from json import JSONDecodeError
 
-from backend.src.utils.utils import MODEL
-from backend.src.utils.pg_vector_rag_connector import PgVectorRAGStoreConnector
+from backend.src.memory.utils import MODEL
+from backend.src.memory.pg_vector_rag_connector import PgVectorRAGStoreConnector
 from backend.src.skills.base_agent import BaseAgent
 from backend.src.skills.debug_agent import DebugAgent
 from backend.src.skills.report_agent import ReportAgent
@@ -9,15 +9,16 @@ from backend.src.skills.research_agent import ResearchAgent
 import ollama
 import json
 import re
-from backend.src.utils.logger_utils import logger
-from backend.src.utils.utils import my_properties
+from backend.src.memory.logger_utils import logger
+from backend.src.memory.utils import my_properties
 
 
 class AgentOrchestrator:
     def __init__(self):
-        format_prompt = f""" Respond EXACTLY in this JSON format, with no additional text or formatting: {{ "type": 
-        `Debug` or `Research` or `Other`, "explanation": \"\"\"\"a quick summary about the question with double 
-        quote\"\"\"\" }} ---\n """
+        format_prompt = f"""Respond EXACTLY in this JSON format, with no additional text, markdown blocks, 
+        or formatting: {{ "type": "<Debug, Research, or Other>", "explanation": "<Briefly explain your exact 
+        reasoning for why you chose this specific category based on the user's prompt with triple quotes, 
+        remove special characters if any>" }} --- """
         other_prompt = """**Other**: 
                 Use this category ONLY for general conversation, greetings, or entirely non-technical topics (e.g., "hello", "how are you", or asking about the weather).
 
@@ -30,7 +31,7 @@ class AgentOrchestrator:
 
         self.system_prompt = f"""You are a technical communication expert analyze user's intention. 
                                        Please analyze user's question, and classify the user's 
-                                       intention into below types:
+                                       intention into one of the following types:
         """ + format_prompt + other_prompt
         self.agent_dir = {}
         self.model = MODEL
@@ -119,18 +120,9 @@ class AgentOrchestrator:
         self.agent_dir[agent.name] = agent
         self.system_prompt = self.system_prompt + "\n" + agent.usage_prompt
 
-    def chat(self, user_query: str):
-        agent = self._assign_agent(user_query)
-        if agent is None:
-            return
-        if agent.name == "Research":
-            filtered_query = self._filter_words(user_query)
-            logger.debug(f"""filtered_query {filtered_query}""")
-            # use filtered_query to find in RAG and third party
-
-    def assign_agent(self, user_query: str) -> BaseAgent | None:
+    def assign_agent(self, user_query: str) -> tuple[BaseAgent, str] | None:
         # analyze the user's intention to debug, research or OTHER
-
+        # logger.debug(f"Assigning agent with [{self.system_prompt}]")
         query_type_json = ollama.chat(
             model=self.model,
             messages=[
@@ -151,14 +143,14 @@ class AgentOrchestrator:
             data = json.loads(query_type_json)
             # and grab the corresponding agent:
             agent = self.agent_dir.get(data['type'])
-            logger.info(f"""Ask type: **{data['type']}**
-                        more details: {data['explanation']}""")
+            # logger.info(f"""Ask type: **{data['type']}**
+# explanation: {data['explanation']}""")
             if agent is not None:
-                logger.info(f"""agent assign: agent[{agent.name}]""")
-                return agent
+                logger.debug(f"""agent assign: agent[{agent.name}]""")
+                return agent, data['explanation']
             else:
-                logger.info(f"""Please ask technical related question""")
-                return None
+                logger.warning(f"""Please ask technical related question""")
+                return None, 'No related skill found'
         except JSONDecodeError:
             logger.error(f"AgentOrchestrator Error during parsing result {query_type_json}")
 
@@ -186,7 +178,7 @@ class AgentOrchestrator:
             return user_query
 
         processed_query = " ".join(filtered_words)
-        logger.info(f"Preprocessed query: '{user_query}' -> '{processed_query}'")
+        logger.info(f"⚙️ Preprocessed query [{processed_query}]\n Origin Query[{user_query}]")
         return processed_query
 
 
