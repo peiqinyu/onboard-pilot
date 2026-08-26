@@ -1,0 +1,24 @@
+Improving latencies
+
+Check out our most up-to-date guide on latency optimization.
+
+Latency is the time it takes for a request to be processed and a response to be returned. In this section, we will discuss some factors that influence the latency of our text generation models and provide suggestions on how to reduce it.
+
+The latency of a completion request is mostly influenced by two factors: the model and the number of tokens generated. The life cycle of a completion request looks like this:
+
+Network
+End user to API latency
+Server
+Time to process prompt tokens
+Server
+Time to sample/generate tokens
+Network
+API to end user latency
+
+The bulk of the latency typically arises from the token generation step.
+
+Intuition: Prompt tokens add very little latency to completion calls. Time to generate completion tokens is much longer, as tokens are generated one at a time. Longer generation lengths will accumulate latency due to generation required for each token.
+
+Common factors affecting latency and possible mitigation techniques
+
+Now that we have looked at the basics of latency, let’s take a look at various factors that can affect latency, broadly ordered from most impactful to least impactful.

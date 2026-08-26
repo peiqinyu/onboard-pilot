@@ -1,25 +1,18 @@
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_ollama import OllamaEmbeddings
-from backend.src.utils.logger_utils import logger
+from backend.src.memory.logger_utils import logger
 
 
 class TokenizerService:
-    def __init__(self):
+    def __init__(self, chunk_size: int = 1024, chunk_overlap: int = 128):
         # =========================================================================
-        # 1. INITIALIZE OR CONNECT TO THE DATABASE
+        # INITIALIZE OR CONNECT TO THE DATABASE
         # =========================================================================
         self.embedding_model = OllamaEmbeddings(model="nomic-embed-text")
 
-        # # Calling Chroma() creates a connection to the database folder without overwriting it
-        # self.vector_db = Chroma(
-        #     collection_name="company_knowledge_base",
-        #     embedding_function=self.embedding_model,
-        #     persist_directory="./rag_data"
-        # )
-        # 400 characters is roughly 100 tokens. This avoids needing the transformers library.
         self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=400,
-            chunk_overlap=50,
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
         )
 
     def get_chunks(self, knowledge_document: str):

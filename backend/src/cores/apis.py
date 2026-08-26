@@ -3,8 +3,8 @@ from pydantic import BaseModel
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.functions import KernelArguments
 from fastapi.middleware.cors import CORSMiddleware
-from backend.src.utils.logger_utils import logger
-from backend.src.utils.utils import construct_user_prompt
+from backend.src.memory.logger_utils import logger
+from backend.src.memory.utils import construct_user_prompt
 from backend.src.cores.factory import kernel_instance, orchestrator_instance, \
     linear_plugin, rag_plugin, chat_client, settings
 
@@ -37,7 +37,7 @@ async def chat_endpoint(chat_request: ChatRequest):
         raise HTTPException(status_code=400, detail="Input cannot be empty")
 
         # Route agent dynamically
-    agent = orchestrator_instance.assign_agent(user_input)
+    agent, explanation = orchestrator_instance.assign_agent(user_input)
     if agent is None:
         return {"response": "I can answer technical related questions only, please ask another question!",
                 "agent_assigned": None}

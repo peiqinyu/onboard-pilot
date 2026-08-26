@@ -1,0 +1,68 @@
+3 Source file structure
+An ordinary source file consists of these sections, in order:
+
+License or copyright information, if present
+Package declaration
+Imports
+Exactly one top-level class declaration
+Exactly one blank line separates each section that is present.
+
+A package-info.java file is the same, but without the class declaration.
+
+A module-info.java file does not contain a package declaration and replaces the class declaration with a module declaration, but otherwise follows the same structure.
+
+3.1 License or copyright information, if present
+If license or copyright information belongs in a file, it belongs here.
+
+3.2 Package declaration
+Every source file must have a package declaration. Compact source files are not used. (This rule obviously does not apply to module-info.java files, which have a different syntax that does not include a package declaration.)
+
+The package declaration is not line-wrapped. The column limit (Section 4.4, Column limit: 100) does not apply to package declarations.
+
+3.3 Imports
+3.3.1 No wildcard imports
+Wildcard ("on-demand") imports, static or otherwise, are not used.
+
+3.3.1.1 No module imports
+Module imports are not used.
+
+Example:
+
+import module java.base;
+3.3.2 No line-wrapping
+Imports are not line-wrapped. The column limit (Section 4.4, Column limit: 100) does not apply to imports.
+
+3.3.3 Ordering and spacing
+Imports are ordered as follows:
+
+All static imports in a single group.
+All non-static imports in a single group.
+If there are both static and non-static imports, a single blank line separates the two groups. There are no other blank lines between imports.
+
+Within each group the imported names appear in ASCII sort order. (Note: this is not the same as the import lines being in ASCII sort order, since '.' sorts before ';'.)
+
+3.3.4 No static import for classes
+Static import is not used for static nested classes. They are imported with normal imports.
+
+3.4 Class declaration
+3.4.1 Exactly one top-level class declaration
+Each top-level class resides in a source file of its own.
+
+3.4.2 Ordering of class contents
+The order you choose for the members and initializers of your class can have a great effect on learnability. However, there's no single correct recipe for how to do it; different classes may order their contents in different ways.
+
+What is important is that each class uses some logical order, which its maintainer could explain if asked. For example, new methods are not just habitually added to the end of the class, as that would yield "chronological by date added" ordering, which is not a logical ordering.
+
+3.4.2.1 Overloads: never split
+Methods of a class that share the same name appear in a single contiguous group with no other members in between. The same applies to multiple constructors. This rule applies even when modifiers such as static or private differ between the methods or constructors.
+
+3.5 Module declaration
+3.5.1 Ordering and spacing of module directives
+Module directives are ordered as follows:
+
+All requires directives in a single block.
+All exports directives in a single block.
+All opens directives in a single block.
+All uses directives in a single block.
+All provides directives in a single block.
+A single blank line separates each block that is present.

@@ -1,9 +1,9 @@
 import requests
 
-from backend.src.utils.base_connector import BaseConnector
+from backend.src.memory.base_connector import BaseConnector
 from typing import Dict, Any
-from backend.src.utils.logger_utils import logger
-from backend.src.utils.utils import my_properties
+from backend.src.memory.logger_utils import logger
+from backend.src.memory.utils import my_properties
 from semantic_kernel.functions import kernel_function
 from typing import Annotated
 
@@ -93,6 +93,8 @@ class LinearConnector(BaseConnector):
     def search_linear_content(self, keyword: Annotated[str, "filtered sentence, e.g. testing process looks like"],
                               first: Annotated[int, "The first k related content to return"])\
             -> Dict[str, Any]:
+        # logger.debug(f"Searching in Linear for: '{keyword}'")
+        logger.info(f"Searching in Linear")
         query = """
         query SearchIssues($term: String!, $first: Int!, $includeComments: Boolean) {
           searchIssues(term: $term, first: $first, includeComments: $includeComments) {

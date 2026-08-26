@@ -1,0 +1,7 @@
+API keys
+
+The OpenAI API uses API keys for authentication. Visit your API keys page to retrieve the API key you’ll use in your requests.
+
+This is a relatively straightforward way to control access, but you must be vigilant about securing these keys. Avoid exposing the API keys in your code or in public repositories; instead, store them in a secure location. You should expose your keys to your application using environment variables or secret management service, so that you don’t need to hard-code them in your codebase. Read more in our Best practices for API key safety.
+
+API key usage can be monitored on the Usage page once tracking is enabled. If you are using an API key generated prior to Dec 20, 2023 tracking will not be enabled by default. You can enable tracking going forward on the API key management dashboard. All API keys generated past Dec 20, 2023 have tracking enabled. Any previous untracked usage will be displayed as Untracked in the dashboard.

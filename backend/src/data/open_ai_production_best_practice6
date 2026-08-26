@@ -1,0 +1,9 @@
+MLOps strategy
+
+As you move your prototype into production, you may want to consider developing an MLOps strategy. MLOps (machine learning operations) refers to the process of managing the end-to-end life cycle of your machine learning models, including any models you may be fine-tuning using our API. There are a number of areas to consider when designing your MLOps strategy. These include
+
+Data and model management: managing the data used to train or fine-tune your model and tracking versions and changes.
+Model monitoring: tracking your model’s performance over time and detecting any potential issues or degradation.
+Model retraining: ensuring your model stays up to date with changes in data or evolving requirements and retraining or fine-tuning it as needed.
+Model deployment: automating the process of deploying your model and related artifacts into production.
+Thinking through these aspects of your application will help ensure your model stays relevant and performs well over time.

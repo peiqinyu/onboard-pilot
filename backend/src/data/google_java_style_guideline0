@@ -1,0 +1,37 @@
+Google Java Style Guide
+Table of Contents
+1 Introduction
+1.1 Terminology notes
+1.2 Guide notes
+2 Source file basics
+2.1 File name
+2.2 File encoding: UTF-8
+2.3 Special characters
+3 Source file structure
+3.1 License or copyright information, if present
+3.2 Package declaration
+3.3 Imports
+3.4 Class declaration
+3.5 Module declaration
+4 Formatting
+4.1 Braces
+4.2 Block indentation: +2 spaces
+4.3 One statement per line
+4.4 Column limit: 100
+4.5 Line-wrapping
+4.6 Whitespace
+4.7 Grouping parentheses: recommended
+4.8 Specific constructs
+5 Naming
+5.1 Rules common to all identifiers
+5.2 Rules by identifier type
+5.3 Camel case: defined
+6 Programming Practices
+6.1 @Override: always used
+6.2 Caught exceptions: not ignored
+6.3 Static members: qualified using class
+6.4 Finalizers: not used
+7 Javadoc
+7.1 Formatting
+7.2 The summary fragment
+7.3 Where Javadoc is used

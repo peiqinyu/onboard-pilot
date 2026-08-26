@@ -1,0 +1,34 @@
+Model
+
+Our API offers different models with varying levels of complexity and generality. The most capable models, such as gpt-5.6, can generate more complex and diverse completions, but they also take longer to process your query. Models such as gpt-5.6-terra and gpt-5.6-luna can generate faster and cheaper Responses, while gpt-5.6 is a stronger default when you want more headroom on complex tasks. You can choose the model that best suits your use case and the trade-off between speed, cost, and quality.
+
+Number of completion tokens
+
+Requesting a large amount of generated tokens completions can lead to increased latencies:
+
+Lower max tokens: for requests with a similar token generation count, those that have a lower max_tokens parameter incur less latency.
+Include stop sequences: to prevent generating unneeded tokens, add a stop sequence. For example, you can use stop sequences to generate a list with a specific number of items. In this case, by using 11. as a stop sequence, you can generate a list with only 10 items, since the completion will stop when 11. is reached. Read our help article on stop sequences for more context on how you can do this.
+Generate fewer completions: lower the values of n and best_of when possible where n refers to how many completions to generate for each prompt and best_of is used to represent the result with the highest log probability per token.
+If n and best_of both equal 1 (which is the default), the number of generated tokens will be at most, equal to max_tokens.
+
+If n (the number of completions returned) or best_of (the number of completions generated for consideration) are set to > 1, each request will create multiple outputs. Here, you can consider the number of generated tokens as [ max_tokens * max (n, best_of) ]
+
+Streaming
+
+Setting stream: true in a request makes the model start returning tokens as soon as they are available, instead of waiting for the full sequence of tokens to be generated. It does not change the time to get all the tokens, but it reduces the time for first token for an application where we want to show partial progress or are going to stop generations. This can be a better user experience and a UX improvement so it’s worth experimenting with streaming.
+
+Batching
+
+Depending on your use case, batching may help. If you are sending multiple requests to the same endpoint, you can batch the prompts to be sent in the same request. This will reduce the number of requests you need to make. The prompt parameter can hold up to 20 unique prompts. We advise you to test out this method and see if it helps. In some cases, you may end up increasing the number of generated tokens which will slow the response time.
+
+Managing costs
+
+To monitor your costs, you can set a notification threshold in your account to receive an email alert once you pass a certain usage threshold. Use the usage tracking dashboard to monitor your token usage during the current and past billing cycles.
+
+Text generation
+
+One of the challenges of moving your prototype into production is budgeting for the costs associated with running your application. OpenAI offers a pay-as-you-go pricing model, with prices per 1,000 tokens (roughly equal to 750 words). To estimate your costs, you will need to project the token utilization. Consider factors such as traffic levels, the frequency with which users will interact with your application, and the amount of data you will be processing.
+
+One useful framework for thinking about reducing costs is to consider costs as a function of the number of tokens and the cost per token. There are two potential avenues for reducing costs using this framework. First, you could work to reduce the cost per token by switching to smaller models for some tasks in order to reduce costs. Alternatively, you could try to reduce the number of tokens required. There are a few ways you could do this, such as by using shorter prompts, fine-tuning models, or caching common user queries so that they don’t need to be processed repeatedly.
+
+You can experiment with our interactive tokenizer tool to help you estimate costs. The API and playground also returns token counts as part of the response. Once you’ve got things working with our most capable model, you can see if the other models can produce the same results with lower latency and costs. Learn more in our token usage help article.

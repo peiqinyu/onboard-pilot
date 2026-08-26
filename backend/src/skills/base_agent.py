@@ -2,9 +2,9 @@
 import os
 from pathlib import Path
 
-from backend.src.utils.utils import MODEL, CHAT_NAME
-from backend.src.utils.utils import read_skill
-from backend.src.utils.logger_utils import logger
+from backend.src.memory.utils import MODEL, CHAT_NAME
+from backend.src.memory.utils import read_skill
+from backend.src.memory.logger_utils import logger
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.contents import ChatHistory
 

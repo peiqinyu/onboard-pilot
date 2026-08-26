@@ -1,7 +1,7 @@
 # Debug Class
 import ollama
 from backend.src.skills.base_agent import BaseAgent
-from backend.src.utils.logger_utils import logger
+from backend.src.memory.logger_utils import logger
 import asyncio
 
 
@@ -21,14 +21,16 @@ classified as `{name}`. Do not evaluate whether the code is complete, correct, o
 prompt, it is `{name}`. 
 - If the query is a high-level, conceptual question about processes, workflows, or technical 
 capabilities WITHOUT a provided code snippet or error trace, do NOT classify it as Debug. Route it to Research 
-instead. """
+instead. 
+"""
         super().__init__(name,
                          "Use this skill when asked to debug code for bugs and style",
                          usage_prompt,
                          "debug_karpathy")
 
     def init_system_prompt(self):
-        self.system_prompt = f"You are an AI acting with the following skill directives:\n\n{self.skill_instructions}"
+        self.system_prompt = f"""You are an AI acting with the following 
+        skill directives:\n{self.skill_instructions}"""
 
     def run_skill_with_ollama(self, user_query: str):
         # 1. Construct the system prompt using the Markdown content

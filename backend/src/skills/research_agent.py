@@ -2,7 +2,7 @@
 from datetime import datetime
 import ollama
 from backend.src.skills.base_agent import BaseAgent
-from backend.src.utils.logger_utils import logger
+from backend.src.memory.logger_utils import logger
 import asyncio
 
 
@@ -22,11 +22,7 @@ it is a `{name}` type"""
                          "research")
 
     def init_system_prompt(self):
-        self.system_prompt = f"""You are a technical communication expert writing elegant issue summaries for 
-                                      developers with the following skill directives:\n\n{self.skill_instructions}. 
-                                      Please read, combine and rewrite the following research summary to be clear, 
-                           professional, and engaging for a developer audience.
-                           """
+        self.system_prompt = f"""{self.skill_instructions}"""
 
     def run_report_research_with_ollama(self, user_query: str,
                                         rag_summary: str, third_party_summary: str):

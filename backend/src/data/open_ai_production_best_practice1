@@ -1,0 +1,23 @@
+Setting up your organization
+
+Once you log in to your OpenAI account, you can find your organization name and ID in your organization settings. The organization name is the label for your organization, shown in user interfaces. The organization ID is the unique identifier for your organization which can be used in API requests.
+
+Users who belong to multiple organizations can pass a header to specify which organization is used for an API request. Usage from these API requests will count against the specified organization’s quota. If no header is provided, the default organization will be billed. You can change your default organization in your user settings.
+
+You can invite new members to your organization from the Team page. Members can be readers or owners.
+
+Readers:
+
+Can make API requests.
+Can view basic organization information.
+Can create, update, and delete resources (like Assistants) in the organization, unless otherwise noted.
+Owners:
+
+Have all the permissions of readers.
+Can modify billing information.
+Can manage members within the organization.
+Managing billing limits
+
+Once you’ve entered your billing information, OpenAI sets an approved usage limit for your organization. Your quota limit will automatically increase as your usage on your platform increases and you move from one usage tier to another. You can review your current usage limit in the limits page in your account settings.
+
+Set spend alerts on the limits page to send notifications when usage exceeds a certain dollar amount. To enforce a monthly cap, set a hard spend limit. Hard spend limits stop affected API traffic when tracked spend reaches the limit, so review the spend limits guide before enabling one in production.

@@ -2,10 +2,10 @@
 from datetime import datetime
 import ollama
 from backend.src.skills.base_agent import BaseAgent
-from backend.src.utils.logger_utils import logger
+from backend.src.memory.logger_utils import logger
 import asyncio
 
-from backend.src.utils.utils import construct_user_prompt, json_str2dir
+from backend.src.memory.utils import construct_user_prompt, json_str2dir
 
 
 class ReportAgent(BaseAgent):
@@ -70,14 +70,11 @@ class ReportAgent(BaseAgent):
 """
         return markdown_content
 
-    def run_report_research_with_ollama(self, user_query: str,
-                                        rag_summary: str, third_party_summary: str):
+    def run_report_research_with_ollama(self, research_output: str) -> str:
         system_prompt = f"""You are a technical communication expert writing elegant issue summaries for 
                                developers with the following skill directives:\n\n{self.skill_instructions}. 
                                Please read, combine and rewrite the following research summary to be clear, 
                     professional, and engaging for a developer audience.
-                    **rag summary** \"\"\"{rag_summary.strip()}\"\"\" 
-                    **third party summary** \"\"\"{third_party_summary.strip()}\"\"\"
                     """
 
         beautified_summary = ollama.chat(
@@ -89,7 +86,7 @@ class ReportAgent(BaseAgent):
                 },
                 {
                     'role': 'user',
-                    'content': user_query
+                    'content': research_output
                 }
             ],
             options={
@@ -97,32 +94,9 @@ class ReportAgent(BaseAgent):
             }
         )['message']['content']
 
-        json_data = json_str2dir(beautified_summary)
-        logger.debug(json_data['answer_found'])
-        if json_data is None:
-            return beautified_summary
-        if not json_data['answer_found']:
-            return f"""# 🤖 Executive Summary
-## Sorry, no related answer found for your question. Please try asking something else.
----
-*Report generated on {datetime.now().strftime('%Y-%m-%d')}*
-"""
+        # json_data = json_str2dir(beautified_summary)
 
-        # Combine all parts into markdown
-        markdown_content = f"""# 🤖 Executive Summary
-## ✍️ Refined Insights
-{json_data['answer_detail']}
-
-## ✅ Why This Works
-{json_data['explanation']}
-
-## 🎯 Data Sources
-{json_data['source']}
----
-
-*Report generated on {datetime.now().strftime('%Y-%m-%d')}*
-"""
-        return markdown_content
+        return beautified_summary
 
 
 if __name__ == "__main__":
