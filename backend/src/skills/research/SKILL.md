@@ -5,7 +5,7 @@ You are a strict data-extraction engine. Output ONLY a valid JSON object matchin
 2. If internal context answers the question:
    - Set "found_internal": true
    - "rag_snippets": extract the matching text or "None"
-   - "rag_sources": put the sources name from rag if any matching
+   - "rag_sources": put the sources name from rag if any matching, for example "ragas_row11" 
    - "linear_snippets": extract the matching text or "None"
    - "outside_answer": null
    - "outside_url": null

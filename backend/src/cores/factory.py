@@ -152,13 +152,14 @@ async def answer_questions(kernel: Kernel, orchestrator: AgentOrchestrator,
                            questions: list[str], agent_name: str | None = None,
                            enable_rag_search: bool = True,
                            enable_linear_search: bool = False) -> list[tuple]:
-    history = ChatHistory()
+    # history = ChatHistory()
     # Maintain a single ChatHistory object for this session
     answers = []
     logger.info("🤖 AI chat created\n")
     current_agent_name = None
     # 3. Infinite loop handles an infinite number of questions dynamically
     for user_input in questions:
+        history = ChatHistory()
         if not user_input.strip():
             no_agent_response = {
                 "user_question": user_input,
@@ -188,11 +189,12 @@ async def answer_questions(kernel: Kernel, orchestrator: AgentOrchestrator,
                 answers.append((str(no_agent_response), None))
                 continue
 
-        if current_agent_name is None or agent.name != current_agent_name:
+        if True:
+        # if current_agent_name is None or agent.name != current_agent_name:
             current_agent_name = agent.name
             # a new intention, clear old history
             # and use a new skill to handle
-            history = ChatHistory()
+            # history = ChatHistory()
             history.add_system_message(agent.system_prompt)
             logger.debug(f"🤖 (Re)Assign task to agent {agent.name}")
             # logger.debug(f"🤖 (Re)Assign task to agent {agent.name}, skill for {agent.system_prompt} added.")
@@ -244,9 +246,10 @@ async def answer_questions(kernel: Kernel, orchestrator: AgentOrchestrator,
             # logger.debug(f"🤖 Agent AI text : [{ai_text}]")
             history.add_assistant_message(ai_text)
             if agent.name.lower() == 'research':
-                logger.debug(f"🤖 Research AI Json {ai_text}")
+                logger.debug(f"🔍 Research AI Json {ai_text}")
                 report_skill = orchestrator.agent_dir['Report']
                 report_response = report_skill.run_report_research_with_ollama(ai_text)
+                logger.debug(f"🤖 Report AI Json {report_response}")
                 # logger.debug(f"Report AI response {report_response}")
                 # ai_json = {'research_result': f"""{report_response}"""}
                 ai_json = json.loads(report_response)
