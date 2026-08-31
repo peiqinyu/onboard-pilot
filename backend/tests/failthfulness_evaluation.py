@@ -10,10 +10,10 @@ from backend.src.memory.utils import load_raga_parquet
 
 CLAIM_MODEL = 'llama3.1'
 EVA_MODEL = 'llama3.1'
-generate_report = False
+generate_report = True
 
 
-def _answers2claims(answer: str) -> list[str]:
+def _answers2claims_v1(answer: str) -> list[str]:
     # Uses your free, local Ollama model as the judge
     claim_extractor = ChatOllama(model=CLAIM_MODEL, temperature=0.0)
 
@@ -50,8 +50,46 @@ Rules:
     return claims_list
 
 
+def _answers2claims_v2(answer: str) -> list[str]:
+    # Uses your free, local Ollama model as the judge
+    claim_extractor = ChatOllama(model=CLAIM_MODEL, temperature=0.0)
+
+    prompt = prompt = f"""Task: Deconstruct the following text into a list of independent, atomic claims.
+
+Rules:
+1. Each statement must contain a complete, standalone thought with its necessary subject (e.g., do not strip out key nouns like "ChatGPT" or "AI" just to make the sentence shorter).
+2. Split compound sentences into separate bullet points ONLY if they represent distinct, independent facts. 
+3. CONTEXTUAL COMPLETENESS: Every claim must retain enough context to be understood on its own without needing the previous sentence. Avoid orphan fragments like "A global surge occurred in adoption" — instead, keep it bound to its subject (e.g., "ChatGPT catalyzed a surge in adoption").
+4. Do not add outside information or assumptions.
+5. Keep the original meaning of the text.
+6. Output ONLY a plain markdown bulleted list using dashes (-). Do not wrap the output in JSON, do not add headers, and do not include any introductory or conversational text.
+
+Text to break down:
+{answer}"""
+
+    response = claim_extractor.invoke(prompt)
+    raw_output = response.content
+    # Parse the raw text string into a clean Python list of strings
+    claims_list = []
+    for line in raw_output.split("\n"):
+        cleaned_line = line.strip()
+        # Look for lines starting with typical markdown bullet markers
+        if cleaned_line.startswith(("-", "*", "•")) or (
+                len(cleaned_line) > 2 and cleaned_line[0].isdigit() and cleaned_line[1] == '.'):
+            # Strip out the leading bullet marker to get just the text
+            if cleaned_line[0].isdigit():
+                # Handles cases where it outputs numbered lists like "1. claim"
+                claim_text = cleaned_line.split(".", 1)[-1].strip()
+            else:
+                claim_text = cleaned_line.lstrip("-*• ").strip()
+
+            if claim_text:
+                claims_list.append(claim_text)
+
+    return claims_list
+
+
 def check_faithfulness_locally_v1(context: str, claim_list: list[str]) -> dict:
-    # claim_list = _answers2claims(answer)
     print(f"""Processing {len(claim_list)} claims...""")
     if not claim_list or len(claim_list) == 0:
         return {
@@ -94,7 +132,6 @@ def check_faithfulness_locally_v1(context: str, claim_list: list[str]) -> dict:
 
 
 def check_faithfulness_locally(user_query: str, retrieved_context: str, answer: str, claim_list: list[str]) -> dict:
-    # claim_list = _answers2claims(answer)
     print(f"""Processing {len(claim_list)} claims...""")
     if not claim_list or len(claim_list) == 0:
         return {
@@ -142,7 +179,6 @@ def check_faithfulness_locally(user_query: str, retrieved_context: str, answer: 
 
 
 def check_answer_relevance_locally(user_query: str, retrieved_context: str, answer: str, claim_list: list[str]) -> dict:
-    # claim_list = _answers2claims(answer)
     print(f"""Processing {len(claim_list)} claims...""")
     if not claim_list or len(claim_list) == 0:
         return {
@@ -192,7 +228,6 @@ def check_answer_relevance_locally(user_query: str, retrieved_context: str, answ
 
 
 def check_context_precision_locally(user_query: str, retrieved_context: str, answer: str, claim_list: list[str]) -> dict:
-    # claim_list = _answers2claims(answer)
     print(f"""Processing {len(claim_list)} claims...""")
     if not claim_list or len(claim_list) == 0:
         return {
@@ -237,7 +272,6 @@ def check_context_precision_locally(user_query: str, retrieved_context: str, ans
 
 
 def check_scores_locally(user_query: str, retrieved_context: str, answer: str, claim_list: list[str]) -> dict:
-    # claim_list = _answers2claims(answer)
     print(f"""Processing {len(claim_list)} claims...""")
     if not claim_list or len(claim_list) == 0:
         return {
@@ -361,7 +395,7 @@ if __name__ == "__main__":
 # # and [OpenAI Production best practices](https://developers.openai.com/api/docs/guides/production-best-practices) against RAG.
 # # """
 
-    ragas_question_list, ragas_context_list = load_ragas_doc(2)
+    ragas_question_list, ragas_context_list = load_ragas_doc(10)
 
     faithfulness_total_score = 0
     answer_relevance_total_score = 0
@@ -386,7 +420,7 @@ if __name__ == "__main__":
         resp = generated_answers[i]
         ans = resp[0]
         src = resp[1]
-        clms = _answers2claims(ans)
+        clms = _answers2claims_v2(ans)
         ctx = f"""**Context1** [{ragas_context_list[i]}]"""
         ques = question_list[i]
         faithfulness_res = check_faithfulness_locally_v1(
@@ -467,19 +501,22 @@ if __name__ == "__main__":
             report_file.write(f"**Question**: {question_list[i]}\n")
             report_file.write(f"**Answer**: {ans}\n")
             report_file.write(f"**Claims**: {clms}\n")
-            report_file.write(f"**Source**: {src}\n")
-            report_file.write(f"**Faithfulness**: {faithfulness_score}\n")
-            report_file.write(f"**Score**: {faithfulness_score}\n")
-            report_file.write(f"**Reason**: {faithfulness_reason_str}\n")
-            report_file.write(f"**Details**: {faithfulness_res}\n")
+            report_file.write(f"**Source**: {src}\n\n")
 
-            report_file.write(f"**Answer Relevance Score**: {answer_relevance_score}\n")
-            report_file.write(f"**Answer Relevance Reason**: {answer_relevance_reason_str}\n")
-            report_file.write(f"**Answer Relevance Details**: {answer_relevance_res}\n")
+            report_file.write(f"### Faithfulness:\n")
+            report_file.write(f"**Score**: {faithfulness_score}\n\n")
+            report_file.write(f"**Reason**: {faithfulness_reason_str}\n\n")
+            report_file.write(f"**Details**: \n\n```\n\n{faithfulness_res}\n```\n\n")
 
-            report_file.write(f"**Context Precision Score**: {context_precision_score}\n")
-            report_file.write(f"**Context Precision Reason**: {context_precision_reason_str}\n")
-            report_file.write(f"**Context Precision Details**: {context_precision_res}\n")
+            report_file.write(f"### Answer Relevance:\n")
+            report_file.write(f"**Score**: {answer_relevance_score}\n\n")
+            report_file.write(f"**Reason**: {answer_relevance_reason_str}\n\n")
+            report_file.write(f"**Details**:\n\n```\n\n {answer_relevance_res}\n```\n\n")
+
+            report_file.write(f"### Context Precision:\n")
+            report_file.write(f"**Score**: {context_precision_score}\n\n")
+            report_file.write(f"**Reason**: {context_precision_reason_str}\n\n")
+            report_file.write(f"**Details**:\n\n```\n\n {context_precision_res}\n```")
 
             report_file.write(f"\n{'-' * 68}\n\n")
 
@@ -494,8 +531,8 @@ if __name__ == "__main__":
     # 3. Append summary and close file if flag is True
     if generate_report:
         report_file.write(f"## Summary\n")
-        report_file.write(f"**Average Faithfulness Score**: {faithfulness_avg_score:.4f}\n")
-        report_file.write(f"**Average Answer Relevance Score**: {answer_relevance_avg_score:.4f}\n")
-        report_file.write(f"**Average Context Precision Score**: {context_precision_avg_score:.4f}\n")
+        report_file.write(f"**Average Faithfulness Score**: {faithfulness_avg_score:.4f}\n\n")
+        report_file.write(f"**Average Answer Relevance Score**: {answer_relevance_avg_score:.4f}\n\n")
+        report_file.write(f"**Average Context Precision Score**: {context_precision_avg_score:.4f}\n\n")
         report_file.close()
         print(f"Report saved to: {filename}")
