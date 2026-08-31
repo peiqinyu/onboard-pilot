@@ -148,7 +148,7 @@ class LinearConnector(BaseConnector):
         name="search_k_content",
         description="Search and return the related issues in Linear for a given sentence."
     )
-    def search_k_content(self, query: str, top_k: int = 3) -> str:
+    def search_k_content(self, query: str, top_k: int = 5) -> str:
         return str(self.search_linear_content(query, top_k))
 
 

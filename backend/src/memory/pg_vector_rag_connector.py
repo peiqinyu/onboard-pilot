@@ -80,7 +80,7 @@ class PgVectorRAGStoreConnector(BaseConnector):
 
     def retrieve_documents(self,
                            query: Annotated[str, "filtered sentence, e.g. testing process looks like"],
-                           top_k: Annotated[int, "The first k related content to return"] = 3,
+                           top_k: Annotated[int, "The first k related content to return"],
                            document_filter: Annotated[str, "filtered key words"] = None) -> str:
         """
         Searches the vector database for the closest chunks to the user's query.
@@ -122,7 +122,7 @@ class PgVectorRAGStoreConnector(BaseConnector):
         name="search_k_content",
         description="""Search and get top k similar items in RAG for a given sentence."""
     )
-    def search_k_content(self, query: str, top_k: int = 3) -> str:
+    def search_k_content(self, query: str, top_k: int = 5) -> str:
         return self.retrieve_documents(query, top_k, None)
 
     def print_all_stored_documents(self, limit: int = 50):
